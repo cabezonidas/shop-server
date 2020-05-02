@@ -48,6 +48,10 @@
     "middy": "^0.36.0",
     "mongoose": "^5.9.10",
     "reflect-metadata": "^0.1.13",
+    "serverless-domain-manager": "^3.3.2",
+    "serverless-dotenv-plugin": "^2.4.2",
+    "serverless-offline": "^6.1.4",
+    "serverless-plugin-typescript": "^1.1.9",
     "type-graphql": "^0.17.6",
     "typeorm": "^0.2.24"
   },
@@ -61,10 +65,6 @@
     "@types/mongoose": "^5.7.13",
     "@types/node": "^13.13.2",
     "nodemon": "^2.0.3",
-    "serverless-domain-manager": "^3.3.2",
-    "serverless-dotenv-plugin": "^2.4.2",
-    "serverless-offline": "^6.1.4",
-    "serverless-plugin-typescript": "^1.1.9",
     "ts-node": "^8.9.0",
     "typescript": "^3.8.3"
   },
