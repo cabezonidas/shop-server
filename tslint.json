@@ -1,0 +1,23 @@
+{
+  "extends": ["tslint:recommended", "tslint-config-prettier", "tslint-react", "tslint-react-hooks"],
+  "rulesDirectory": ["tslint-plugin-prettier"],
+  "rules": {
+    "prettier": true,
+    "no-console": false,
+    "no-conditional-assignment": false,
+    "ordered-imports": false,
+    "object-literal-sort-keys": false,
+    "max-classes-per-file": [true, 10, "exclude-class-expressions"],
+    "variable-name": {
+      "options": ["allow-leading-underscore", "ban-keywords", "check-format", "allow-pascal-case"]
+    },
+    "jsx-use-translation-function": {
+      "options": ["allow-punctuation", "allow-htmlentities"]
+    },
+    "jsx-no-multiline-js": false,
+    "jsx-wrap-multiline": false,
+    "jsx-no-lambda": false,
+    "array-type": false
+  },
+  "defaultSeverity": "error"
+}
