@@ -21,7 +21,8 @@
     "start:watch": "node -r ts-node/register ./src/server.ts",
     "start": "nodemon",
     "typeorm": "./node_modules/.bin/typeorm",
-    "test": "echo \"No tests to run\""
+    "test": "echo \"No tests to run\"",
+    "publish": "sls deploy -v"
   },
   "bugs": {
     "url": "https://github.com/cabezonidas/shop-server/issues"
@@ -48,6 +49,7 @@
     "middy": "^0.36.0",
     "mongoose": "^5.9.10",
     "reflect-metadata": "^0.1.13",
+    "serverless": "^1.69.0",
     "serverless-domain-manager": "^3.3.2",
     "serverless-dotenv-plugin": "^2.4.2",
     "serverless-offline": "^6.1.4",

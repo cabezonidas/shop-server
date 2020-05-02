@@ -1,0 +1,59 @@
+version: 2.1
+
+workflows:
+  shop-backend:
+    jobs:
+      - build:
+          context: aws-shop
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - checkout
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
+
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+
+      # Deploy server
+      - run:
+          name: Add env vars for server
+          command: |
+            echo ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET >> .env
+            echo GOOGLE_CLIENT_IT=$GOOGLE_CLIENT_IT >> .env
+            echo GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET >> .env
+            echo GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI >> .env
+            echo GOOGLE_REFRESH_TOKEN=$GOOGLE_REFRESH_TOKEN >> .env
+            echo MEDIA_AWS_ACCESS_KEY_ID=$MEDIA_AWS_ACCESS_KEY_ID >> .env
+            echo MEDIA_AWS_SECRET_ACCESS_KEY=$MEDIA_AWS_SECRET_ACCESS_KEY >> .env
+            echo MONGODB_PASSWORD=$MONGODB_PASSWORD >> .env
+            echo MONGODB_USR=$MONGODB_USR >> .env
+            echo NODE_ENV=$NODE_ENV >> .env
+            echo REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET >> .env
+
+      # Instal dependencies
+      - run:
+          name: Install dependencies
+          command: yarn
+
+      # Run tests
+      - run:
+          name: Run tests
+          command: yarn test
+
+      # Publish back end
+      - run:
+          name: Publishing server
+          command: yarn publish
