@@ -56,4 +56,4 @@ jobs:
       # Publish back end
       - run:
           name: Publishing server
-          command: yarn publish
+          command: yarn deploy

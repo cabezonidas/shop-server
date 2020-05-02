@@ -22,7 +22,7 @@
     "start": "nodemon",
     "typeorm": "./node_modules/.bin/typeorm",
     "test": "echo \"No tests to run\"",
-    "publish": "sls deploy -v"
+    "deploy": "sls deploy -v"
   },
   "bugs": {
     "url": "https://github.com/cabezonidas/shop-server/issues"
