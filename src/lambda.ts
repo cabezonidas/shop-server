@@ -26,7 +26,11 @@ export const handler = middy(async (event: any, context: Context) => {
   .use(httpErrorHandler())
   .use(
     cors({
-      origins: ["https://admin.javascript.kiwi", "https://www.javascript.kiwi"],
+      origins: [
+        "http://localhost:3000",
+        "https://admin.javascript.kiwi",
+        "https://www.javascript.kiwi",
+      ],
       credentials: true,
       headers:
         "Access-Control-Request-Method, Access-Control-Request-Headers, Origin, Content-Type, authorization",
