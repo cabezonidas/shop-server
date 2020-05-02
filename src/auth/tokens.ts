@@ -11,9 +11,10 @@ export const createAccessToken = (user: User) =>
   sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15min" });
 
 export const sendRefreshToken = (res: Response, token: string) => {
+  const { NODE_ENV } = process.env;
   return ((res as unknown) as any).cookie("jid", token, {
     httpOnly: true,
     sameSite: "none",
-    secure: true,
+    secure: NODE_ENV !== "development",
   });
 };
