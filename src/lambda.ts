@@ -24,4 +24,11 @@ export const handler = middy(async (event: any, context: Context) => {
   return proxy(server, event, context, "PROMISE").promise;
 })
   .use(httpErrorHandler())
-  .use(cors({ credentials: true }));
+  .use(
+    cors({
+      origins: ["https://admin.javascript.kiwi", "https://www.javascript.kiwi"],
+      credentials: true,
+      headers:
+        "Access-Control-Request-Method, Access-Control-Request-Headers, Origin, Content-Type, authorization",
+    })
+  );
