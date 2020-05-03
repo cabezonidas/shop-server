@@ -24,6 +24,9 @@ const server = (() => {
       resolvers: [UserResolver, MediaResolver, MailResolver],
       validate: false,
     }),
+    playground: {
+      endpoint: "/prd/graphql",
+    },
     context: ({ req, res }) => ({ req, res }),
   });
   apolloServer.applyMiddleware({ app, cors: false });
