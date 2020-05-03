@@ -25,7 +25,7 @@ const server = (() => {
       validate: false,
     }),
     playground: {
-      endpoint: "/prd/graphql",
+      endpoint: "/graphql",
     },
     context: ({ req, res }) => ({ req, res }),
   });
