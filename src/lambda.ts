@@ -28,6 +28,7 @@ export const handler = middy(async (event: any, context: Context) => {
     cors({
       origins: [
         "http://localhost:3000",
+        "https://shop-public.now.sh",
         "https://admin.javascript.kiwi",
         "https://www.javascript.kiwi",
       ],
