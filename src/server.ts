@@ -10,9 +10,15 @@ import { translation } from "./middleware";
 import awsServerlessExpressMiddleware from "aws-serverless-express/middleware";
 import { MediaResolver } from "./resolvers/media-resolver";
 import { MailResolver } from "./resolvers/mail-resolver";
+import { connectToDatabase } from "./db";
+import cors from "cors";
 
 const server = (() => {
   const app = express();
+
+  if (process.env.NODE_ENV === "development") {
+    app.use(cors({ origin: true, credentials: true }));
+  }
 
   app.use(translation);
   app.use(cookieParser());
@@ -31,7 +37,14 @@ const server = (() => {
   });
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.use(awsServerlessExpressMiddleware.eventContext());
+  if (process.env.NODE_ENV === "development") {
+    const port = 8899;
+    connectToDatabase().then(() => {
+      app.listen({ port }, () => console.log(`Server ready at http://localhost:${port}`));
+    });
+  } else {
+    app.use(awsServerlessExpressMiddleware.eventContext());
+  }
 
   return app;
 })();

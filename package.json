@@ -22,7 +22,8 @@
     "start": "nodemon",
     "typeorm": "./node_modules/.bin/typeorm",
     "test": "echo \"No tests to run\"",
-    "deploy": "sls deploy -v"
+    "deploy": "sls deploy -v",
+    "start:offline": "sls offline -v"
   },
   "bugs": {
     "url": "https://github.com/cabezonidas/shop-server/issues"
@@ -41,6 +42,7 @@
     "aws-serverless-express": "^3.3.8",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^49.0.0",
