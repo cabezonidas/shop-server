@@ -107,7 +107,7 @@ export const awsListAlbums = async (): Promise<{
   });
 
 export const awsAddPhoto = async (albumName: string, fileName: string, file: Stream) => {
-  const albumPhotosKey = encodeURIComponent(albumName) + "//";
+  const albumPhotosKey = encodeURIComponent(albumName) + "/";
 
   const photoKey = albumPhotosKey + fileName;
 
@@ -137,7 +137,7 @@ export const awsViewAlbum = async (
 }> =>
   new Promise(resolve => {
     {
-      const albumPhotosKey = encodeURIComponent(albumName) + "//";
+      const albumPhotosKey = encodeURIComponent(albumName) + "/";
       s3.listObjects({ Prefix: albumPhotosKey } as any, (err, data) => {
         if (err) {
           return resolve({
