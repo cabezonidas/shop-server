@@ -10,6 +10,9 @@ provider:
   name: aws
   runtime: nodejs12.x
   stage: prd
+  apiGateway:
+    binaryMediaTypes:
+      - "*/*"
 
 custom:
   serverless-offline:
