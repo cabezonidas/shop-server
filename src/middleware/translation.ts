@@ -1,6 +1,7 @@
 import i18next from "i18next";
 import * as middleware from "i18next-http-middleware";
 import { awsEnUs, awsEsAr } from "../integrations";
+import { postsEnUs, postsEsAr } from "../resolvers/post-resolver";
 
 const enUs = {
   translation: {
@@ -9,6 +10,7 @@ const enUs = {
       invalid_login: "Invalid login",
       invalid_password: "Invalid password",
       aws: awsEnUs,
+      posts: postsEnUs,
     },
   },
 };
@@ -20,6 +22,7 @@ const esAr = {
       invalid_login: "Usuario inválido",
       invalid_password: "Contraseña inválida",
       aws: awsEsAr,
+      posts: postsEsAr,
     },
   },
 };

@@ -12,6 +12,7 @@ import { MediaResolver } from "./resolvers/media-resolver";
 import { MailResolver } from "./resolvers/mail-resolver";
 import { connectToDatabase } from "./db";
 import cors from "cors";
+import { PostResolver } from "./resolvers/post-resolver";
 
 const server = (() => {
   const app = express();
@@ -27,11 +28,15 @@ const server = (() => {
   const apolloServer = new ApolloServer({
     introspection: true,
     schema: buildSchemaSync({
-      resolvers: [UserResolver, MediaResolver, MailResolver],
+      resolvers: [UserResolver, MediaResolver, MailResolver, PostResolver],
       validate: false,
     }),
+
     playground: {
       endpoint: "/graphql",
+      settings: {
+        "request.credentials": "include",
+      },
     },
     context: ({ req, res }) => ({ req, res }),
   });
