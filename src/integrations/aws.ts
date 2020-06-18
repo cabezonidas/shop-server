@@ -58,7 +58,7 @@ export const awsCreateAlbum = (
         albumKey: "",
       });
     }
-    const albumKey = encodeURIComponent(albumName) + "/";
+    const albumKey = albumName + "/";
     s3.headObject({ Key: albumKey } as any, (err1, _) => {
       if (!err1) {
         return resolve({
@@ -82,6 +82,7 @@ export const awsCreateAlbum = (
             albumKey: "",
           });
         }
+
         return resolve({ succeed: true, albumKey: albumName });
       });
     });
@@ -99,7 +100,7 @@ export const awsListAlbums = async (): Promise<{
       } else {
         const albums = data.CommonPrefixes.map(commonPrefix => {
           const prefix = commonPrefix.Prefix;
-          return decodeURIComponent(prefix.replace("/", ""));
+          return prefix.replace("/", "");
         });
         resolve({ success: true, data: albums });
       }
@@ -107,9 +108,9 @@ export const awsListAlbums = async (): Promise<{
   });
 
 export const awsAddPhoto = async (albumName: string, fileName: string, file: Stream) => {
-  const albumPhotosKey = encodeURIComponent(albumName) + "/";
+  const albumPhotosKey = albumName + "/";
 
-  const photoKey = albumPhotosKey + fileName;
+  const photoKey = albumPhotosKey + decodeURIComponent(fileName);
 
   const upload = new S3.ManagedUpload({
     params: {
@@ -137,7 +138,7 @@ export const awsViewAlbum = async (
 }> =>
   new Promise(resolve => {
     {
-      const albumPhotosKey = encodeURIComponent(albumName) + "/";
+      const albumPhotosKey = albumName + "/";
       s3.listObjects({ Prefix: albumPhotosKey } as any, (err, data) => {
         if (err) {
           return resolve({
@@ -150,7 +151,7 @@ export const awsViewAlbum = async (
 
         const photos = data.Contents.map(photo => ({
           photoKey: photo.Key,
-          photoUrl: bucketUrl + encodeURIComponent(photo.Key),
+          photoUrl: bucketUrl + photo.Key,
           name: photo.Key.replace(albumPhotosKey, ""),
         })).filter(p => !!p.name);
         return resolve({ succeed: true, photos });
@@ -179,7 +180,7 @@ export const awsDeleteAlbum = async (
   albumName: string
 ): Promise<{ succeed: boolean; error?: string }> =>
   new Promise(resolve => {
-    const albumKey = encodeURIComponent(albumName) + "/";
+    const albumKey = albumName + "/";
     s3.listObjects({ Prefix: albumKey } as any, (err, data) => {
       if (err) {
         return resolve({
