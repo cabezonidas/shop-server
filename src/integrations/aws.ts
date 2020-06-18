@@ -152,7 +152,7 @@ export const awsViewAlbum = async (
           photoKey: photo.Key,
           photoUrl: bucketUrl + encodeURIComponent(photo.Key),
           name: photo.Key.replace(albumPhotosKey, ""),
-        }));
+        })).filter(p => !!p.name);
         return resolve({ succeed: true, photos });
       });
     }
