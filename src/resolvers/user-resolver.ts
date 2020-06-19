@@ -109,4 +109,27 @@ export class UserResolver {
     }
     return true;
   }
+
+  @Query(() => [Role])
+  public async roles(@Ctx() context: IGraphqlContext) {
+    const roles = [
+      new Role("admin", context.req.t("roles.admin")),
+      new Role("author", context.req.t("roles.author")),
+    ];
+    return roles;
+  }
+}
+
+@ObjectType()
+class Role {
+  constructor(_id: string, _name: string) {
+    this.id = _id;
+    this.name = _name;
+  }
+
+  @Field(() => String)
+  public id: string;
+
+  @Field(() => String)
+  public name: string;
 }
