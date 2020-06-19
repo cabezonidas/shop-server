@@ -1,5 +1,5 @@
 import { Resolver, Query, Ctx, Mutation, UseMiddleware, Arg } from "type-graphql";
-import { isAuth } from "../auth/is-auth";
+import { isAuthor } from "../auth/is-auth";
 import { IGraphqlContext } from "../igraphql-context";
 import { Post } from "../entity/post";
 import { User } from "../entity/user";
@@ -18,19 +18,19 @@ export const postsEsAr = {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public allPosts() {
     return Post.find({ where: { created: { $ne: undefined }, deleted: { $eq: undefined } } });
   }
 
   @Query(() => [Post])
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public allPostDrafts() {
     return Post.find({ where: { created: undefined, deleted: { $eq: undefined } } });
   }
 
   @Query(() => Post, { nullable: true })
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async getDraft(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
     const post = await Post.findOne(_id);
     if (post && !post.created) {
@@ -41,7 +41,7 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async getPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
     const post = await Post.findOne(_id);
     if (post && !!post.created) {
@@ -52,7 +52,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   /**
    * Logic for posts and drafts are the same
    */
@@ -61,7 +61,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async deletePost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
     const post = await Post.findOne(_id);
     if (post) {
@@ -73,7 +73,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async saveDraft(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
@@ -94,7 +94,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   /**
    * Similar to save draft, except it stamps author and created, which turns it from draft to post
    * This draft gets created and author stamps
@@ -122,7 +122,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async publishPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
     const post = await Post.findOne(_id);
     if (post) {
@@ -135,7 +135,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async unpublishPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
     const post = await Post.findOne(_id);
     if (post) {
@@ -146,7 +146,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async addTranslation(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
@@ -168,7 +168,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   /**
    * There is no soft delete to translations
    */
@@ -186,7 +186,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async saveTranslationDraft(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
@@ -207,7 +207,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async saveTranslationPost(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
@@ -232,7 +232,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async publishTranslationPost(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
@@ -250,7 +250,7 @@ export class PostResolver {
   }
 
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAuthor)
   public async unpublishTranslationPost(
     @Arg("_id") _id: string,
     @Arg("language") language: string,
