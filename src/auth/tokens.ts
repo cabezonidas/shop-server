@@ -8,7 +8,9 @@ export const createRefreshToken = (user: User) =>
   });
 
 export const createAccessToken = (user: User) =>
-  sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15min" });
+  sign({ userId: user._id, roles: user.roles }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "15min",
+  });
 
 export const sendRefreshToken = (res: Response, token: string) => {
   const { NODE_ENV } = process.env;
