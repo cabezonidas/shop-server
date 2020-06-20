@@ -2,19 +2,19 @@ import { Entity, Column, BaseEntity, ObjectIdColumn, ObjectID } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 
 @ObjectType()
-class Description extends BaseEntity {
-  @Field(() => String)
+class UserDescription {
+  @Field()
   @Column()
   public localeId: string;
 
-  @Field(() => String)
+  @Field()
   @Column()
   public text: string;
 }
 
 @ObjectType()
 @Entity("users")
-export class User extends Description {
+export class User extends BaseEntity {
   @Field(() => String)
   @ObjectIdColumn()
   public _id: ObjectID;
@@ -63,9 +63,9 @@ export class User extends Description {
   @Column()
   public github: string;
 
-  @Field(() => [Description], { nullable: true })
+  @Field(() => [UserDescription], { nullable: true })
   @Column()
-  public description: [Description];
+  public description: [UserDescription];
 
   @Column()
   public password: string;
