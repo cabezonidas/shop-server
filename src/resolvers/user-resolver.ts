@@ -7,6 +7,7 @@ import {
   Field,
   Ctx,
   UseMiddleware,
+  InputType,
 } from "type-graphql";
 import { User } from "../entity/user";
 import { hash, compare } from "bcryptjs";
@@ -15,6 +16,50 @@ import { createRefreshToken, createAccessToken, sendRefreshToken } from "../auth
 import { isAuth } from "../auth/is-auth";
 import { ObjectId } from "mongodb";
 import { verify } from "jsonwebtoken";
+
+@InputType()
+class LocalizedDescription {
+  @Field()
+  public localeId: string;
+
+  @Field()
+  public text: string;
+}
+@InputType()
+class EditProfileInput {
+  @Field({ nullable: true })
+  _id: string;
+
+  @Field({ nullable: true })
+  name?: string;
+
+  @Field({ nullable: true })
+  dob?: number;
+
+  @Field({ nullable: true })
+  imageUrl?: string;
+
+  @Field({ nullable: true })
+  linkedin?: string;
+
+  @Field({ nullable: true })
+  whatsapp?: string;
+
+  @Field({ nullable: true })
+  instagram?: string;
+
+  @Field({ nullable: true })
+  facebook?: string;
+
+  @Field({ nullable: true })
+  messenger?: string;
+
+  @Field({ nullable: true })
+  github?: string;
+
+  @Field(() => [LocalizedDescription], { nullable: true })
+  description?: LocalizedDescription[];
+}
 
 @ObjectType()
 class LoginResponse {
@@ -108,6 +153,34 @@ export class UserResolver {
       return false;
     }
     return true;
+  }
+
+  @Mutation(() => User)
+  @UseMiddleware(isAuth)
+  public async updateProfile(
+    @Arg("input") input: EditProfileInput,
+    @Ctx() { payload, req: { t } }: IGraphqlContext
+  ) {
+    if (payload.userId !== input._id) {
+      throw new Error(t("errors.not_privileges"));
+    }
+    const user = await User.findOne(payload.userId);
+    if (!user) {
+      throw new Error(t("errors.user_not_found"));
+    }
+
+    user.name = input.name;
+    user.dob = input.dob;
+    user.imageUrl = input.imageUrl;
+    user.linkedin = input.linkedin;
+    user.whatsapp = input.whatsapp;
+    user.instagram = input.instagram;
+    user.facebook = input.facebook;
+    user.messenger = input.messenger;
+    user.github = input.github;
+    user.description = input.description as typeof user.description;
+
+    return await user.save();
   }
 
   @Query(() => [Role])

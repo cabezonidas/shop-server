@@ -6,6 +6,7 @@ import { postsEnUs, postsEsAr } from "../resolvers/post-resolver";
 const enUs = {
   translation: {
     errors: {
+      user_not_found: "User not found",
       not_authenticated: "Unauthenticated access",
       not_privileges: "Not enough privileges for user",
       invalid_login: "Invalid login",
@@ -23,6 +24,7 @@ const enUs = {
 const esAr = {
   translation: {
     errors: {
+      user_not_found: "Userio no encontrado",
       not_authenticated: "Acceso sin autenticar",
       not_privileges: "Usuario con privilegios insuficientes",
       invalid_login: "Usuario inválido",
