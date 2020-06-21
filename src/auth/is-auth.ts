@@ -30,10 +30,10 @@ export const isAuthor: MiddlewareFn<IGraphqlContext> = ({ context }, next) => {
   context.payload = payload as any;
 
   if (context.payload?.roles?.includes("author")) {
-    next();
+    return next();
   }
 
-  throw new Error(context.req.t("errors.not_privileges")); // Agregar error key!
+  throw new Error(context.req.t("errors.not_privileges"));
 };
 
 export const isAdmin: MiddlewareFn<IGraphqlContext> = ({ context }, next) => {
@@ -42,8 +42,8 @@ export const isAdmin: MiddlewareFn<IGraphqlContext> = ({ context }, next) => {
   context.payload = payload as any;
 
   if (context.payload?.roles?.includes("admin")) {
-    next();
+    return next();
   }
 
-  throw new Error(context.req.t("errors.not_privileges")); // Agregar error key!
+  throw new Error(context.req.t("errors.not_privileges"));
 };
