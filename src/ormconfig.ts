@@ -1,6 +1,7 @@
 import { ConnectionOptions } from "typeorm";
 import { User } from "./entity/user";
 import { Post } from "./entity/post";
+import { Tag } from "./entity/tag";
 
 const { MONGODB_USR, MONGODB_PASSWORD } = process.env;
 
@@ -11,7 +12,7 @@ export const mongodbConnection: ConnectionOptions = {
   useUnifiedTopology: true,
   synchronize: true,
   logging: false,
-  entities: [User, Post],
+  entities: [User, Post, Tag],
   subscribers: ["src/subscriber/*.ts"],
   migrations: ["src/migration/*.ts"],
   cli: {

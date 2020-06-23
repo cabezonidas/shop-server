@@ -13,6 +13,7 @@ import { MailResolver } from "./resolvers/mail-resolver";
 import { connectToDatabase } from "./db";
 import cors from "cors";
 import { PostResolver } from "./resolvers/post-resolver";
+import { TagResolver } from "./resolvers/tag-resolver";
 
 const server = (() => {
   const app = express();
@@ -28,7 +29,7 @@ const server = (() => {
   const apolloServer = new ApolloServer({
     introspection: true,
     schema: buildSchemaSync({
-      resolvers: [UserResolver, MediaResolver, MailResolver, PostResolver],
+      resolvers: [UserResolver, MediaResolver, MailResolver, PostResolver, TagResolver],
       validate: false,
     }),
 
