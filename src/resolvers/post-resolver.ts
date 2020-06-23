@@ -80,6 +80,7 @@ export class PostResolver {
     @Arg("title") title: string,
     @Arg("description") description: string,
     @Arg("body") body: string,
+    @Arg("tags", () => [String]) tags: string[],
     @Ctx() { req: { t } }: IGraphqlContext
   ) {
     const post = await Post.findOne(_id);
@@ -88,6 +89,7 @@ export class PostResolver {
       post.description = description;
       post.body = body;
       post.language = language;
+      post.tags = tags;
       return post.save();
     }
     throw new Error(t("errors.posts.post_not_found"));
@@ -105,6 +107,7 @@ export class PostResolver {
     @Arg("title") title: string,
     @Arg("description") description: string,
     @Arg("body") body: string,
+    @Arg("tags", () => [String]) tags: string[],
     @Ctx() { payload, req: { t } }: IGraphqlContext
   ) {
     const post = await Post.findOne(_id);
@@ -115,6 +118,7 @@ export class PostResolver {
       post.title = title;
       post.description = description;
       post.body = body;
+      post.tags = tags;
       post.language = post.language || language;
       return post.save();
     }
@@ -193,13 +197,14 @@ export class PostResolver {
     @Arg("title") title: string,
     @Arg("description") description: string,
     @Arg("body") body: string,
+    @Arg("tags", () => [String]) tags: string[],
     @Ctx() { req: { t } }: IGraphqlContext
   ) {
     const post = await Post.findOne(_id);
     if (post) {
       post.translations = [
         ...post.translations.filter(t => t.language !== language),
-        { title, description, body, language },
+        { title, description, body, language, tags },
       ] as typeof post.translations;
       return post.save();
     }
@@ -214,6 +219,7 @@ export class PostResolver {
     @Arg("title") title: string,
     @Arg("description") description: string,
     @Arg("body") body: string,
+    @Arg("tags", () => [String]) tags: string[],
     @Ctx() { payload, req: { t } }: IGraphqlContext
   ) {
     const post = await Post.findOne(_id);
@@ -224,7 +230,7 @@ export class PostResolver {
       const updated = Date.now();
       post.translations = [
         ...post.translations.filter(t => t.language !== language),
-        { ...translation, title, description, body, language, author, created, updated },
+        { ...translation, title, description, body, language, author, created, updated, tags },
       ] as typeof post.translations;
       return post.save();
     }

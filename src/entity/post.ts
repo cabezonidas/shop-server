@@ -35,6 +35,10 @@ class PostData extends BaseEntity {
   @Field({ nullable: true })
   @Column()
   public body: string;
+
+  @Field(() => [String], { nullable: true })
+  @Column()
+  public tags: string[];
 }
 
 @ObjectType()
