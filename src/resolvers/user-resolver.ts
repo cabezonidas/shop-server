@@ -147,15 +147,30 @@ export class UserResolver {
     return true;
   }
 
-  @Mutation(() => Boolean)
-  public async register(@Arg("email") email: string, @Arg("password") password: string) {
+  @Mutation(() => LoginResponse)
+  public async register(
+    @Arg("email") email: string,
+    @Arg("password") password: string,
+    @Ctx() { res, req }: IGraphqlContext
+  ) {
     const hashedPassword = await hash(password, 12);
-    try {
-      await User.insert({ email, password: hashedPassword });
-    } catch (err) {
-      return false;
+    const user = await User.findOne({ email });
+    if (user) {
+      throw new Error(req.t("errors.account_already_taken"));
     }
-    return true;
+
+    const newUser = new User();
+    newUser.email = email;
+    newUser.password = hashedPassword;
+
+    await User.insert(newUser);
+
+    sendRefreshToken(res, createRefreshToken(newUser));
+
+    return {
+      accessToken: createAccessToken(newUser),
+      user: newUser,
+    };
   }
 
   @Mutation(() => User)
