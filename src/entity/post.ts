@@ -55,4 +55,8 @@ export class Post extends PostData {
   @Field(() => [PostData])
   @Column()
   public translations: PostData[];
+
+  @Field({ nullable: true })
+  @Column()
+  public starred?: boolean;
 }

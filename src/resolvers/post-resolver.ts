@@ -271,4 +271,15 @@ export class PostResolver {
     }
     throw new Error(t("errors.posts.post_not_found"));
   }
+
+  @Mutation(() => Post)
+  @UseMiddleware(isAuthor)
+  public async starPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
+    const post = await Post.findOne(_id);
+    if (post) {
+      post.starred = !post.starred;
+      return post.save();
+    }
+    throw new Error(t("errors.posts.post_not_found"));
+  }
 }
