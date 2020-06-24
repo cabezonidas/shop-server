@@ -63,6 +63,10 @@ export class User extends BaseEntity {
   @Column()
   public github: string;
 
+  @Field(() => String, { nullable: true })
+  @Column()
+  public twitter: string;
+
   @Field(() => [UserDescription], { nullable: true })
   @Column()
   public description: [UserDescription];

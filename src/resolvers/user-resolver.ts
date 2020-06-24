@@ -57,6 +57,9 @@ class EditProfileInput {
   @Field({ nullable: true })
   github?: string;
 
+  @Field({ nullable: true })
+  twitter?: string;
+
   @Field(() => [LocalizedDescription], { nullable: true })
   description?: LocalizedDescription[];
 }
@@ -178,6 +181,7 @@ export class UserResolver {
     user.facebook = input.facebook;
     user.messenger = input.messenger;
     user.github = input.github;
+    user.twitter = input.twitter;
     user.description = input.description as typeof user.description;
 
     return await user.save();
