@@ -210,6 +210,18 @@ export class UserResolver {
     ];
     return roles;
   }
+
+  @Query(() => [User])
+  public getStaff() {
+    return User.find({
+      where: {
+        $or: [
+          { roles: { $elemMatch: { $eq: "admin" } } },
+          { roles: { $elemMatch: { $eq: "author" } } },
+        ],
+      },
+    });
+  }
 }
 
 @ObjectType()
