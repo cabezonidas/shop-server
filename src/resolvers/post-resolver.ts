@@ -1,4 +1,13 @@
-import { Resolver, Query, Ctx, Mutation, UseMiddleware, Arg } from "type-graphql";
+import {
+  Resolver,
+  Query,
+  Ctx,
+  Mutation,
+  UseMiddleware,
+  Arg,
+  ObjectType,
+  Field,
+} from "type-graphql";
 import { isAuthor } from "../auth/is-auth";
 import { IGraphqlContext } from "../igraphql-context";
 import { Post } from "../entity/post";
@@ -281,5 +290,59 @@ export class PostResolver {
       return post.save();
     }
     throw new Error(t("errors.posts.post_not_found"));
+  }
+
+  @Query(() => LatestPosts)
+  public async getLatestPublicPosts(@Arg("skip") skip: number, @Arg("take") take: number) {
+    const [posts, count] = await Post.findAndCount({
+      where: {
+        ...isPublic,
+        $and: [{ starred: { $ne: true } }],
+      },
+      order: { published: "DESC" },
+      skip,
+      take,
+    });
+
+    return new LatestPosts(posts, count);
+  }
+
+  @Query(() => [Post])
+  public async getPinnedPublicPosts() {
+    const posts = await Post.find({
+      where: {
+        ...isPublic,
+        $and: [{ starred: { $eq: true } }],
+      },
+      order: { published: "DESC" },
+    });
+
+    return posts;
+  }
+}
+
+const isPublic = {
+  $or: [
+    {
+      published: { $ne: undefined },
+      deleted: { $eq: undefined },
+    },
+    {
+      translations: {
+        $elemMatch: { published: { $ne: undefined }, deleted: { $eq: undefined } },
+      },
+    },
+  ],
+};
+
+@ObjectType()
+class LatestPosts {
+  @Field(() => [Post])
+  public posts: Post[];
+  @Field()
+  public total: number;
+  constructor(p: Post[], c: number) {
+    this.posts = p;
+    this.total = c;
   }
 }
