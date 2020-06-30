@@ -12,6 +12,7 @@ import { isAuthor } from "../auth/is-auth";
 import { IGraphqlContext } from "../igraphql-context";
 import { Post } from "../entity/post";
 import { User } from "../entity/user";
+import { ObjectID } from "typeorm";
 
 export const postsEnUs = {
   cant_add_translation_same_language:
@@ -292,6 +293,22 @@ export class PostResolver {
     throw new Error(t("errors.posts.post_not_found"));
   }
 
+  // Public endpoints
+  @Query(() => Post)
+  public async getPublicPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
+    const post = await Post.findOne(_id, {
+      where: {
+        ...isPublic,
+        $and: [{ starred: { $ne: true } }],
+      },
+    });
+
+    if (post) {
+      return mapPublicInfo(post);
+    }
+    throw new Error(t("errors.posts.post_not_found"));
+  }
+
   @Query(() => LatestPosts)
   public async getLatestPublicPosts(@Arg("skip") skip: number, @Arg("take") take: number) {
     const [posts, count] = await Post.findAndCount({
@@ -304,7 +321,10 @@ export class PostResolver {
       take,
     });
 
-    return new LatestPosts(posts, count);
+    return new LatestPosts(
+      posts.map(p => mapPublicInfo(p)),
+      count
+    );
   }
 
   @Query(() => [Post])
@@ -317,7 +337,53 @@ export class PostResolver {
       order: { published: "DESC" },
     });
 
-    return posts;
+    return posts.map(p => mapPublicInfo(p));
+  }
+
+  @Query(() => [PublicPath])
+  public async getPinnedPublicPaths() {
+    const posts = (
+      await Post.find({
+        where: {
+          ...isPublic,
+          $and: [{ starred: { $eq: true } }],
+        },
+        order: { published: "DESC" },
+      })
+    ).map(p => mapPublicInfo(p));
+
+    const result = posts.map(p => {
+      const postPath: PublicPath = {
+        _id: p._id,
+        titles: [
+          { localeId: p.language, title: p.title },
+          ...p.translations.map(t => ({ localeId: t.language, title: t.title })),
+        ].filter(t => !!(t.localeId && t.localeId)),
+      };
+      return postPath;
+    });
+
+    return result;
+  }
+
+  @Query(() => Post)
+  public async getPinnedPublicPost(
+    @Arg("_id") _id: string,
+    @Ctx() { req: { t } }: IGraphqlContext
+  ) {
+    // const post = await Post.findOne(_id);
+
+    const post = await Post.findOne(_id, {
+      where: {
+        ...isPublic,
+        $and: [{ starred: { $eq: true } }],
+      },
+    });
+
+    if (post) {
+      return mapPublicInfo(post);
+    }
+    throw new Error(t("errors.posts.post_not_found"));
   }
 }
 
@@ -335,6 +401,17 @@ const isPublic = {
   ],
 };
 
+/* Remove data from post that isn't published */
+const mapPublicInfo = (post: Post) => {
+  Object.keys(post).map(key => {
+    if (!["_id", "starred", "translations"].includes(key)) {
+      delete post["key"];
+    }
+  });
+  post.translations = post.translations.filter(t => !!t.published);
+  return post;
+};
+
 @ObjectType()
 class LatestPosts {
   @Field(() => [Post])
@@ -345,4 +422,19 @@ class LatestPosts {
     this.posts = p;
     this.total = c;
   }
+}
+
+@ObjectType()
+class PublicPath {
+  @Field(() => String)
+  public _id: ObjectID;
+  @Field(() => [Title])
+  public titles: Title[];
+}
+@ObjectType()
+class Title {
+  @Field()
+  public localeId: string;
+  @Field()
+  public title: string;
 }
