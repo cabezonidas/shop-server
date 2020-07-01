@@ -296,12 +296,7 @@ export class PostResolver {
   // Public endpoints
   @Query(() => Post)
   public async getPublicPost(@Arg("_id") _id: string, @Ctx() { req: { t } }: IGraphqlContext) {
-    const post = await Post.findOne(_id, {
-      where: {
-        ...isPublic,
-        $and: [{ starred: { $ne: true } }],
-      },
-    });
+    const post = await Post.findOne(_id, { where: isPublicPost });
 
     if (post) {
       return mapPublicInfo(post);
@@ -312,10 +307,7 @@ export class PostResolver {
   @Query(() => LatestPosts)
   public async getLatestPublicPosts(@Arg("skip") skip: number, @Arg("take") take: number) {
     const [posts, count] = await Post.findAndCount({
-      where: {
-        ...isPublic,
-        $and: [{ starred: { $ne: true } }],
-      },
+      where: isPublicPost,
       order: { published: "DESC" },
       skip,
       take,
@@ -329,27 +321,14 @@ export class PostResolver {
 
   @Query(() => [Post])
   public async getPinnedPublicPosts() {
-    const posts = await Post.find({
-      where: {
-        ...isPublic,
-        $and: [{ starred: { $eq: true } }],
-      },
-      order: { published: "DESC" },
-    });
-
+    const posts = await Post.find({ where: isPublicPinned, order: { published: "DESC" } });
     return posts.map(p => mapPublicInfo(p));
   }
 
   @Query(() => [PublicPath])
   public async getPinnedPublicPaths() {
     const posts = (
-      await Post.find({
-        where: {
-          ...isPublic,
-          $and: [{ starred: { $eq: true } }],
-        },
-        order: { published: "DESC" },
-      })
+      await Post.find({ where: isPublicPinned, order: { published: "DESC" } })
     ).map(p => mapPublicInfo(p));
 
     const result = posts.map(p => {
@@ -371,15 +350,7 @@ export class PostResolver {
     @Arg("_id") _id: string,
     @Ctx() { req: { t } }: IGraphqlContext
   ) {
-    // const post = await Post.findOne(_id);
-
-    const post = await Post.findOne(_id, {
-      where: {
-        ...isPublic,
-        $and: [{ starred: { $eq: true } }],
-      },
-    });
-
+    const post = await Post.findOne(_id, { where: isPublicPinned });
     if (post) {
       return mapPublicInfo(post);
     }
@@ -391,7 +362,6 @@ const isPublic = {
   $or: [
     {
       published: { $ne: undefined },
-      deleted: { $eq: undefined },
     },
     {
       translations: {
@@ -399,7 +369,11 @@ const isPublic = {
       },
     },
   ],
+  $and: [{ deleted: { $eq: undefined } }],
 };
+
+const isPublicPost = { ...isPublic, $and: [...isPublic.$and, { starred: { $ne: true } }] };
+const isPublicPinned = { ...isPublic, $and: [...isPublic.$and, { starred: { $eq: true } }] };
 
 /* Remove data from post that isn't published */
 const mapPublicInfo = (post: Post) => {
