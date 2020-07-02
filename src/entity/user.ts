@@ -1,5 +1,5 @@
 import { Entity, Column, BaseEntity, ObjectIdColumn, ObjectID } from "typeorm";
-import { ObjectType, Field, Int } from "type-graphql";
+import { ObjectType, Field, Float } from "type-graphql";
 
 @ObjectType()
 class UserDescription {
@@ -27,7 +27,7 @@ export class User extends BaseEntity {
   @Column()
   public roles: [string];
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Float, { nullable: true })
   @Column()
   public dob: number;
 
