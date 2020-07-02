@@ -3,11 +3,13 @@ import { User } from "./entity/user";
 import { Post } from "./entity/post";
 import { Tag } from "./entity/tag";
 
-const { MONGODB_USR, MONGODB_PASSWORD } = process.env;
+const { MONGODB_USR, MONGODB_PASSWORD, NODE_ENV } = process.env;
+
+const db = NODE_ENV === "production" ? "prod" : "test";
 
 export const mongodbConnection: ConnectionOptions = {
   type: "mongodb",
-  url: `mongodb+srv://${MONGODB_USR}:${MONGODB_PASSWORD}@repocluster-exdit.mongodb.net/test?retryWrites=true&w=majority`,
+  url: `mongodb+srv://${MONGODB_USR}:${MONGODB_PASSWORD}@repocluster-exdit.mongodb.net/${db}?retryWrites=true&w=majority`,
   useNewUrlParser: true,
   useUnifiedTopology: true,
   synchronize: true,
