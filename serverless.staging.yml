@@ -4,19 +4,23 @@ plugins:
   - serverless-plugin-typescript
   - serverless-dotenv-plugin
   - serverless-domain-manager
-  - serverless-offline
 
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: dev
+  stage: test
   apiGateway:
     binaryMediaTypes:
       - "*/*"
 
 custom:
-  serverless-offline:
-    httpPort: 8899
+  customDomain:
+    domainName: api.javascript.kiwi
+    basePath: ""
+    hostedZoneId: Z07130781UYYC1ZGE6N6M
+    stage: ${self:provider.stage}
+    certificateName: api.javascript.kiwi
+    createRoute53Record: true
 
 functions:
   backend:

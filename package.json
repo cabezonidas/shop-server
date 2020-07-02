@@ -22,7 +22,8 @@
     "start": "nodemon",
     "typeorm": "./node_modules/.bin/typeorm",
     "test": "echo \"No tests to run\"",
-    "deploy": "sls deploy -v",
+    "deploy:staging": "sls deploy --config serverless.staging.yml",
+    "deploy:production": "sls deploy --config serverless.production.yml",
     "start:offline": "sls offline -v"
   },
   "bugs": {
