@@ -3,61 +3,89 @@ version: 2.1
 workflows:
   shop-backend:
     jobs:
-      - build:
+      - build-staging:
+          context: aws-shop
+      - build-production:
           context: aws-shop
 
-jobs:
-  build:
-    docker:
-      - image: circleci/node:10.16.3
+commands:
+  save_env_vars:
+    description: "Add env vars for server"
+    parameters:
+      environment:
+        type: string
+    steps:
+      - run: |
+          echo ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET >> .env
+          echo GOOGLE_CLIENT_IT=$GOOGLE_CLIENT_IT >> .env
+          echo GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET >> .env
+          echo GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI >> .env
+          echo GOOGLE_REFRESH_TOKEN=$GOOGLE_REFRESH_TOKEN >> .env
+          echo MEDIA_AWS_ACCESS_KEY_ID=$MEDIA_AWS_ACCESS_KEY_ID >> .env
+          echo MEDIA_AWS_SECRET_ACCESS_KEY=$MEDIA_AWS_SECRET_ACCESS_KEY >> .env
+          echo MONGODB_PASSWORD=$MONGODB_PASSWORD >> .env
+          echo MONGODB_USR=$MONGODB_USR >> .env
+          echo REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET >> .env
+          echo NODE_ENV=<< parameters.environment >> >> .env
+  dependencies_cache_dancing:
+    description: "Checkout branch and install dependencies"
     steps:
       - checkout
-
       - restore_cache:
-          name: Restore Yarn Package Cache
           keys:
             - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
-          name: Install Dependencies
           command: yarn install --frozen-lockfile
-
       - save_cache:
-          name: Save Yarn Package Cache
           key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
-
-      # Deploy server
-      - run:
-          name: Add env vars for server
-          command: |
-            echo ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET >> .env
-            echo GOOGLE_CLIENT_IT=$GOOGLE_CLIENT_IT >> .env
-            echo GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET >> .env
-            echo GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI >> .env
-            echo GOOGLE_REFRESH_TOKEN=$GOOGLE_REFRESH_TOKEN >> .env
-            echo MEDIA_AWS_ACCESS_KEY_ID=$MEDIA_AWS_ACCESS_KEY_ID >> .env
-            echo MEDIA_AWS_SECRET_ACCESS_KEY=$MEDIA_AWS_SECRET_ACCESS_KEY >> .env
-            echo MONGODB_PASSWORD=$MONGODB_PASSWORD >> .env
-            echo MONGODB_USR=$MONGODB_USR >> .env
-            echo NODE_ENV=$NODE_ENV >> .env
-            echo REFRESH_TOKEN_SECRET=$REFRESH_TOKEN_SECRET >> .env
-
-      # Instal dependencies
+  install_dependencies:
+    description: "Install dependencies"
+    steps:
       - run:
           name: Install dependencies
           command: yarn
-
-      # Run tests
+  run_tests:
+    description: "Run tests"
+    steps:
       - run:
-          name: Run tests
           command: yarn test
-
+  instal_serverless:
+    description: "Install Serverless CLI"
+    steps:
       - run:
-          name: Install Serverless CLI
           command: sudo yarn global add serverless
-
-      # Publish back end
+jobs:
+  build-staging:
+    branches:
+      only:
+        - master
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - dependencies_cache_dancing
+      - save_env_vars:
+          environment: "staging"
+      - install_dependencies
+      - run_tests
+      - instal_serverless
       - run:
           name: Publishing server
-          command: yarn deploy
+          command: yarn deploy:staging
+  build-production:
+    branches:
+      only:
+        - production
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - dependencies_cache_dancing
+      - save_env_vars:
+          environment: "production"
+      - install_dependencies
+      - run_tests
+      - instal_serverless
+      - run:
+          name: Publishing server
+          command: yarn deploy:production
