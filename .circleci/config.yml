@@ -5,8 +5,14 @@ workflows:
     jobs:
       - build-staging:
           context: aws-shop
+          branches:
+            only:
+              - master
       - build-production:
           context: aws-shop
+          branches:
+            only:
+              - production
 
 commands:
   save_env_vars:
@@ -58,9 +64,6 @@ commands:
           command: sudo yarn global add serverless
 jobs:
   build-staging:
-    branches:
-      only:
-        - master
     docker:
       - image: circleci/node:10.16.3
     steps:
@@ -74,9 +77,6 @@ jobs:
           name: Publishing server
           command: yarn deploy:staging
   build-production:
-    branches:
-      only:
-        - production
     docker:
       - image: circleci/node:10.16.3
     steps:
