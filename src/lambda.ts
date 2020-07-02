@@ -22,6 +22,9 @@ export const handler = middy(async (event: any, context: Context) => {
         "https://admin.javascript.kiwi",
         "https://www.javascript.kiwi",
         "https://javascript.kiwi",
+        "https://admin.latamtradingclub.com",
+        "https://www.latamtradingclub.com",
+        "https://latamtradingclub.com",
       ],
       credentials: true,
       headers:
