@@ -5,14 +5,16 @@ workflows:
     jobs:
       - build-staging:
           context: aws-shop
-          branches:
-            only:
-              - master
+          filters:
+            branches:
+              only:
+                - master
       - build-production:
           context: aws-shop
-          branches:
-            only:
-              - production
+          filters:
+            branches:
+              only:
+                - production
 
 commands:
   save_env_vars:
