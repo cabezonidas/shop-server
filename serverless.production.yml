@@ -15,11 +15,11 @@ provider:
 
 custom:
   customDomain:
-    domainName: api.latamtradingclub.com
+    domainName: api.lataminvestingclub.com
     basePath: ""
-    hostedZoneId: Z07403453LL5Q6UTFRZT6
+    hostedZoneId: Z02250962UA70NENOA8CF
     stage: ${self:provider.stage}
-    certificateName: api.latamtradingclub.com
+    certificateName: api.lataminvestingclub.com
     createRoute53Record: true
 
 functions:

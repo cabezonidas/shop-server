@@ -25,6 +25,9 @@ export const handler = middy(async (event: any, context: Context) => {
         "https://admin.latamtradingclub.com",
         "https://www.latamtradingclub.com",
         "https://latamtradingclub.com",
+        "https://admin.lataminvestingclub.com",
+        "https://www.lataminvestingclub.com",
+        "https://lataminvestingclub.com",
       ],
       credentials: true,
       headers:
