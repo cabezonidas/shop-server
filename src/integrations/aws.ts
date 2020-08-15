@@ -25,7 +25,8 @@ export const awsEsAr = {
   failed_to_delete_album: "Hubo un error al eliminar tu álbum.",
 };
 
-const albumBucketName = "cabezonidas-shop-photos";
+const albumBucketName =
+  process.env.NODE_ENV === "production" ? "cabezonidas-shop-photos" : "img.javascript.kiwi";
 const bucketRegion = "us-east-1";
 
 config.update({
