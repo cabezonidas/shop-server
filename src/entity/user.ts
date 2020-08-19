@@ -76,4 +76,7 @@ export class User extends BaseEntity {
 
   @Column("int", { default: 0 })
   public tokenVersion: number;
+
+  @Column()
+  public accessCodeExpiry: number;
 }

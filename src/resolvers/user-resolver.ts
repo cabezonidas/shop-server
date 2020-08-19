@@ -16,6 +16,21 @@ import { createRefreshToken, createAccessToken, sendRefreshToken } from "../auth
 import { isAuth } from "../auth/is-auth";
 import { ObjectId } from "mongodb";
 import { verify } from "jsonwebtoken";
+import Mailgen from "mailgen";
+import { sendMail } from "../integrations";
+
+const emailRegex = new RegExp(
+  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+);
+
+const MailGenerator = new Mailgen({
+  theme: "default",
+  product: {
+    name: "Latam Investing Club",
+    link: "https://lataminvestingclub.com",
+    copyright: `Copyright © ${new Date().getFullYear()} Latam Investing Club.`,
+  },
+});
 
 @InputType()
 class LocalizedDescription {
@@ -70,6 +85,8 @@ class LoginResponse {
   public accessToken: string;
   @Field(() => User)
   public user: User;
+  @Field(() => Boolean, { nullable: true })
+  public needsPassword?: boolean;
 }
 
 @Resolver()
@@ -123,13 +140,42 @@ export class UserResolver {
     return {
       accessToken: createAccessToken(user),
       user,
+      needsPassword: false,
+    };
+  }
+
+  @Mutation(() => LoginResponse)
+  public async loginWithToken(
+    @Arg("email") email: string,
+    @Arg("token") token: string,
+    @Ctx() { req, res }: IGraphqlContext
+  ): Promise<LoginResponse> {
+    const user = await User.findOne({ where: { email } });
+    if (!user || !user.accessCodeExpiry) {
+      throw new Error(req.t("errors.invalid_login"));
+    }
+
+    const code = user.accessCodeExpiry.toString().toString().substr(9, 4);
+    const valid = code === token && Date.now() < user.accessCodeExpiry;
+    if (!valid) {
+      throw new Error(req.t("errors.invalid_token"));
+    }
+
+    user.accessCodeExpiry = undefined;
+    await user.save();
+
+    sendRefreshToken(res, createRefreshToken(user));
+
+    return {
+      accessToken: createAccessToken(user),
+      user,
+      needsPassword: true,
     };
   }
 
   @Mutation(() => Boolean)
   public async logout(@Ctx() { res }: IGraphqlContext) {
     sendRefreshToken(res, "");
-
     return true;
   }
 
@@ -170,6 +216,7 @@ export class UserResolver {
     return {
       accessToken: createAccessToken(newUser),
       user: newUser,
+      needsPassword: false,
     };
   }
 
@@ -221,6 +268,89 @@ export class UserResolver {
         ],
       },
     });
+  }
+
+  @Query(() => Boolean)
+  public async loginRequiresCode(
+    @Arg("email", () => String)
+    email: string,
+    @Ctx()
+    { req: { t } }: IGraphqlContext
+  ) {
+    if (!emailRegex.test(email)) {
+      throw new Error(t("mails.signup.invalid_email"));
+    }
+
+    const user = (await User.findOne({ where: { email } })) ?? new User();
+
+    if (!user.password) {
+      user.email = email;
+      user.accessCodeExpiry = Date.now() + 600000;
+      const code = user.accessCodeExpiry.toString().toString().substr(9, 4);
+      await user.save();
+      const html = MailGenerator.generate({
+        body: {
+          greeting: t("mails.signup.greeting"),
+          signature: t("mails.signup.signature"),
+          name: email,
+          intro: [
+            t("mails.signup.intro_1"),
+            t("mails.signup.intro_2"),
+            t("mails.signup.action_instruction", { code }),
+          ],
+          outro: [t("mails.signup.questions"), t("mails.signup.questions_action")],
+        },
+      });
+      await sendMail({
+        subject: t("mails.signup.subject", { code }),
+        to: email,
+        html,
+      });
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Mutation(() => Boolean)
+  public async renewCodeLogin(
+    @Arg("email", () => String)
+    email: string,
+    @Ctx()
+    { req: { t } }: IGraphqlContext
+  ) {
+    if (!emailRegex.test(email)) {
+      throw new Error(t("mails.signup.invalid_email"));
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      throw new Error(t("errors.invalid_login"));
+    }
+
+    user.accessCodeExpiry = Date.now() + 600000;
+    const code = user.accessCodeExpiry.toString().toString().substr(9, 4);
+    await user.save();
+    const html = MailGenerator.generate({
+      body: {
+        greeting: t("mails.signup.greeting"),
+        signature: t("mails.signup.signature"),
+        name: email,
+        intro: [
+          t("mails.signup.intro_1"),
+          t("mails.signup.intro_2"),
+          t("mails.signup.action_instruction", { code }),
+        ],
+        outro: [t("mails.signup.questions"), t("mails.signup.questions_action")],
+      },
+    });
+    await sendMail({
+      subject: t("mails.signup.subject", { code }),
+      to: email,
+      html,
+    });
+    return true;
   }
 }
 
