@@ -1,5 +1,6 @@
-import { config, S3 } from "aws-sdk";
+import { config, S3, SES } from "aws-sdk";
 import { Stream } from "stream";
+import { createTransport, SendMailOptions } from "nodemailer";
 
 export const awsEnUs = {
   incorrect_album_name_one_non_space_character:
@@ -208,3 +209,21 @@ export const awsDeleteAlbum = async (
       );
     });
   });
+
+export const sendMail = ({ subject, ...otherProps }: Omit<SendMailOptions, "from">) => {
+  const transporter = createTransport({
+    SES: new SES({
+      apiVersion: "2010-12-01",
+    }),
+  });
+
+  return transporter.sendMail({
+    sender: "Hernan Alvarado",
+    from:
+      process.env.NODE_ENV === "production"
+        ? "hernan@lataminvestingclub.com"
+        : "test@lataminvestingclub.awsapps.com",
+    subject: process.env.NODE_ENV === "production" ? subject : `[TEST] ${subject}`,
+    ...otherProps,
+  });
+};
