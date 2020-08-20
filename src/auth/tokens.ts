@@ -18,5 +18,11 @@ export const sendRefreshToken = (res: Response, token: string) => {
     httpOnly: true,
     sameSite: "none",
     secure: NODE_ENV !== "development",
+    domain:
+      NODE_ENV === "production"
+        ? ".lataminvestingclub.com"
+        : NODE_ENV === "staging"
+        ? ".javascript.kiwi"
+        : undefined,
   });
 };
