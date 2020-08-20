@@ -125,6 +125,7 @@ export class UserResolver {
     @Arg("password") password: string,
     @Ctx() { req, res }: IGraphqlContext
   ): Promise<LoginResponse> {
+    email = email.toLowerCase();
     const user = await User.findOne({ where: { email } });
     if (!user) {
       throw new Error(req.t("errors.invalid_login"));
@@ -150,6 +151,7 @@ export class UserResolver {
     @Arg("token") token: string,
     @Ctx() { req, res }: IGraphqlContext
   ): Promise<LoginResponse> {
+    email = email.toLowerCase();
     const user = await User.findOne({ where: { email } });
     if (!user || !user.accessCodeExpiry) {
       throw new Error(req.t("errors.invalid_login"));
@@ -199,6 +201,7 @@ export class UserResolver {
     @Arg("password") password: string,
     @Ctx() { res, req }: IGraphqlContext
   ) {
+    email = email.toLowerCase();
     const hashedPassword = await hash(password, 12);
     const user = await User.findOne({ email });
     if (user) {
@@ -277,6 +280,7 @@ export class UserResolver {
     @Ctx()
     { req: { t } }: IGraphqlContext
   ) {
+    email = email.toLowerCase();
     if (!emailRegex.test(email)) {
       throw new Error(t("mails.signup.invalid_email"));
     }
@@ -319,6 +323,7 @@ export class UserResolver {
     @Ctx()
     { req: { t } }: IGraphqlContext
   ) {
+    email = email.toLowerCase();
     if (!emailRegex.test(email)) {
       throw new Error(t("mails.signup.invalid_email"));
     }
