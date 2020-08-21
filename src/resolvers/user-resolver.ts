@@ -13,7 +13,7 @@ import { User } from "../entity/user";
 import { hash, compare } from "bcryptjs";
 import { IGraphqlContext } from "../igraphql-context";
 import { createRefreshToken, createAccessToken, sendRefreshToken } from "../auth/tokens";
-import { isAuth } from "../auth/is-auth";
+import { isAuth, isAdmin } from "../auth/is-auth";
 import { ObjectId } from "mongodb";
 import { verify } from "jsonwebtoken";
 import Mailgen from "mailgen";
@@ -251,12 +251,32 @@ export class UserResolver {
 
     return await user.save();
   }
+  @Mutation(() => User)
+  @UseMiddleware(isAdmin)
+  public async setUserRole(
+    @Arg("_id") _id: string,
+    @Arg("roleId") roleId: string,
+    @Arg("add") add: boolean,
+    @Ctx() { req }: IGraphqlContext
+  ) {
+    const user = await User.findOne(_id);
+    if (!user) {
+      throw new Error(req.t("errors.user_not_found"));
+    }
+    user.roles = (user.roles ?? []).filter(r => r !== roleId);
+    if (add) {
+      user.roles = [...user.roles, roleId];
+    }
+    return await user.save();
+  }
 
   @Query(() => [Role])
   public async roles(@Ctx() context: IGraphqlContext) {
     const roles = [
       new Role("admin", context.req.t("roles.admin")),
       new Role("author", context.req.t("roles.author")),
+      new Role("networker", context.req.t("roles.networker")),
+      new Role("real-state", context.req.t("roles.real-state")),
     ];
     return roles;
   }

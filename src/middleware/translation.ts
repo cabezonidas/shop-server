@@ -32,6 +32,8 @@ const enUs = {
     roles: {
       admin: "Administrator",
       author: "Author",
+      networker: "Networker",
+      "real-state": "Real state",
     },
   },
 };
@@ -66,6 +68,8 @@ const esAr = {
     roles: {
       admin: "Administrador/a",
       author: "Autor/a",
+      networker: "Networker",
+      "real-state": "Inmobiliaria",
     },
   },
 };
