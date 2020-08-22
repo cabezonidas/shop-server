@@ -20,7 +20,7 @@ import Mailgen from "mailgen";
 import { sendMail } from "../integrations";
 
 const emailRegex = new RegExp(
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 );
 
 const MailGenerator = new Mailgen({
@@ -77,6 +77,18 @@ class EditProfileInput {
 
   @Field(() => [LocalizedDescription], { nullable: true })
   description?: LocalizedDescription[];
+}
+
+@InputType()
+class CreateUserInput {
+  @Field()
+  name: string;
+
+  @Field()
+  email: string;
+
+  @Field(() => [String])
+  roles: string[];
 }
 
 @ObjectType()
@@ -267,6 +279,21 @@ export class UserResolver {
     if (add) {
       user.roles = [...user.roles, roleId];
     }
+    return await user.save();
+  }
+  @Mutation(() => User)
+  @UseMiddleware(isAdmin)
+  public async createUser(@Arg("input") input: CreateUserInput, @Ctx() { req }: IGraphqlContext) {
+    input.email = input.email.toLowerCase();
+    const { email, name, roles } = input;
+    let user = await User.findOne({ email });
+    if (user) {
+      throw new Error(req.t("errors.account_already_taken"));
+    }
+    user = new User();
+    user.email = email;
+    user.name = name;
+    user.roles = roles;
     return await user.save();
   }
 
