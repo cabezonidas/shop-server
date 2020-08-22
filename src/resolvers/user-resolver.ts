@@ -109,9 +109,17 @@ export class UserResolver {
     return await User.find();
   }
 
-  @Query(() => String)
-  public hello() {
-    return "hello!";
+  @Query(() => User)
+  @UseMiddleware(isAdmin)
+  public async findUser(
+    @Arg("userId", () => String) userId: string,
+    @Ctx() { req: { t } }: IGraphqlContext
+  ) {
+    const user = await User.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      throw new Error(t("errors.user_not_found"));
+    }
+    return user;
   }
 
   @Query(() => User, { nullable: true })
