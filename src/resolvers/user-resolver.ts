@@ -104,7 +104,7 @@ class LoginResponse {
 @Resolver()
 export class UserResolver {
   @Query(() => [User])
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAdmin)
   public async users() {
     return await User.find();
   }
