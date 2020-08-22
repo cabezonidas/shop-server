@@ -32,6 +32,8 @@ const enUs = {
     roles: {
       admin: "Administrator",
       author: "Author",
+      networker: "Networker",
+      "real-state": "Real state",
     },
   },
 };
@@ -53,7 +55,7 @@ const esAr = {
       },
     },
     errors: {
-      user_not_found: "Userio no encontrado",
+      user_not_found: "Usuario no encontrado",
       not_authenticated: "Acceso sin autenticar",
       not_privileges: "Usuario con privilegios insuficientes",
       invalid_login: "Usuario inválido",
@@ -66,6 +68,8 @@ const esAr = {
     roles: {
       admin: "Administrador/a",
       author: "Autor/a",
+      networker: "Networker",
+      "real-state": "Inmobiliaria",
     },
   },
 };

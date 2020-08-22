@@ -13,14 +13,14 @@ import { User } from "../entity/user";
 import { hash, compare } from "bcryptjs";
 import { IGraphqlContext } from "../igraphql-context";
 import { createRefreshToken, createAccessToken, sendRefreshToken } from "../auth/tokens";
-import { isAuth } from "../auth/is-auth";
+import { isAuth, isAdmin } from "../auth/is-auth";
 import { ObjectId } from "mongodb";
 import { verify } from "jsonwebtoken";
 import Mailgen from "mailgen";
 import { sendMail } from "../integrations";
 
 const emailRegex = new RegExp(
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 );
 
 const MailGenerator = new Mailgen({
@@ -79,6 +79,18 @@ class EditProfileInput {
   description?: LocalizedDescription[];
 }
 
+@InputType()
+class CreateUserInput {
+  @Field()
+  name: string;
+
+  @Field()
+  email: string;
+
+  @Field(() => [String])
+  roles: string[];
+}
+
 @ObjectType()
 class LoginResponse {
   @Field()
@@ -92,14 +104,22 @@ class LoginResponse {
 @Resolver()
 export class UserResolver {
   @Query(() => [User])
-  @UseMiddleware(isAuth)
+  @UseMiddleware(isAdmin)
   public async users() {
     return await User.find();
   }
 
-  @Query(() => String)
-  public hello() {
-    return "hello!";
+  @Query(() => User)
+  @UseMiddleware(isAdmin)
+  public async findUser(
+    @Arg("userId", () => String) userId: string,
+    @Ctx() { req: { t } }: IGraphqlContext
+  ) {
+    const user = await User.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+      throw new Error(t("errors.user_not_found"));
+    }
+    return user;
   }
 
   @Query(() => User, { nullable: true })
@@ -251,12 +271,47 @@ export class UserResolver {
 
     return await user.save();
   }
+  @Mutation(() => User)
+  @UseMiddleware(isAdmin)
+  public async setUserRole(
+    @Arg("_id") _id: string,
+    @Arg("roleId") roleId: string,
+    @Arg("add") add: boolean,
+    @Ctx() { req }: IGraphqlContext
+  ) {
+    const user = await User.findOne(_id);
+    if (!user) {
+      throw new Error(req.t("errors.user_not_found"));
+    }
+    user.roles = (user.roles ?? []).filter(r => r !== roleId);
+    if (add) {
+      user.roles = [...user.roles, roleId];
+    }
+    return await user.save();
+  }
+  @Mutation(() => User)
+  @UseMiddleware(isAdmin)
+  public async createUser(@Arg("input") input: CreateUserInput, @Ctx() { req }: IGraphqlContext) {
+    input.email = input.email.toLowerCase();
+    const { email, name, roles } = input;
+    let user = await User.findOne({ email });
+    if (user) {
+      throw new Error(req.t("errors.account_already_taken"));
+    }
+    user = new User();
+    user.email = email;
+    user.name = name;
+    user.roles = roles;
+    return await user.save();
+  }
 
   @Query(() => [Role])
   public async roles(@Ctx() context: IGraphqlContext) {
     const roles = [
       new Role("admin", context.req.t("roles.admin")),
       new Role("author", context.req.t("roles.author")),
+      new Role("networker", context.req.t("roles.networker")),
+      new Role("real-state", context.req.t("roles.real-state")),
     ];
     return roles;
   }

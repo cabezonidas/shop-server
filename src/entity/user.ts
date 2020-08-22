@@ -25,7 +25,7 @@ export class User extends BaseEntity {
 
   @Field(() => [String], { nullable: true })
   @Column()
-  public roles: [string];
+  public roles: string[];
 
   @Field(() => Float, { nullable: true })
   @Column()
