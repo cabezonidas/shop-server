@@ -18,6 +18,7 @@ import { ObjectId } from "mongodb";
 import { verify } from "jsonwebtoken";
 import Mailgen from "mailgen";
 import { sendMail } from "../integrations";
+import { ObjectID } from "typeorm";
 
 const emailRegex = new RegExp(
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -77,6 +78,36 @@ class EditProfileInput {
 
   @Field(() => [LocalizedDescription], { nullable: true })
   description?: LocalizedDescription[];
+}
+
+@InputType()
+class UserRelationInput {
+  @Field(() => String)
+  _id: string;
+
+  @Field()
+  name: string;
+
+  @Field()
+  email: string;
+}
+
+@InputType()
+class SetUpInvestorProfileInput {
+  @Field()
+  name: string;
+
+  @Field()
+  country: string;
+
+  @Field()
+  phone: string;
+
+  @Field()
+  password: string;
+
+  @Field(() => UserRelationInput, { nullable: true })
+  sponsor?: UserRelationInput;
 }
 
 @InputType()
@@ -271,6 +302,43 @@ export class UserResolver {
 
     return await user.save();
   }
+
+  @Mutation(() => User)
+  @UseMiddleware(isAuth)
+  public async setUpInvestorProfile(
+    @Arg("input") input: SetUpInvestorProfileInput,
+    @Ctx() { payload, req: { t } }: IGraphqlContext
+  ) {
+    let user = await User.findOne(payload.userId);
+    if (!user) {
+      throw new Error(t("errors.user_not_found"));
+    }
+
+    user.name = input.name;
+    user.country = input.country;
+    user.phone = input.phone;
+    user.password = await hash(input.password, 12);
+    user.sponsoredBy = input.sponsor && {
+      _id: input.sponsor._id.toString(),
+      name: input.sponsor.name,
+      email: input.sponsor.email,
+    };
+
+    user = await user.save();
+
+    const sponsor = user.sponsoredBy && (await User.findOne(user.sponsoredBy._id));
+    if (sponsor) {
+      const { _id, name, email } = user;
+      const investors = [
+        ...(sponsor.myInvestors?.filter(i => i.email !== user.email) ?? []),
+        { _id, name, email },
+      ];
+      sponsor.myInvestors = investors as typeof sponsor.myInvestors;
+      await sponsor.save();
+    }
+
+    return user;
+  }
   @Mutation(() => User)
   @UseMiddleware(isAdmin)
   public async setUserRole(
@@ -325,6 +393,13 @@ export class UserResolver {
           { roles: { $elemMatch: { $eq: "author" } } },
         ],
       },
+    });
+  }
+
+  @Query(() => [User])
+  public getNetworkers() {
+    return User.find({
+      where: { roles: { $elemMatch: { $eq: "networker" } } },
     });
   }
 

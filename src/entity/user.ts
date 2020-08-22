@@ -13,6 +13,21 @@ class UserDescription {
 }
 
 @ObjectType()
+class UserRelation {
+  @Field(() => String)
+  @Column()
+  public _id: string;
+
+  @Field()
+  @Column()
+  public name: string;
+
+  @Field()
+  @Column()
+  public email: string;
+}
+
+@ObjectType()
 @Entity("users")
 export class User extends BaseEntity {
   @Field(() => String)
@@ -79,4 +94,20 @@ export class User extends BaseEntity {
 
   @Column()
   public accessCodeExpiry: number;
+
+  @Field(() => [UserRelation], { nullable: true })
+  @Column()
+  public myInvestors: UserRelation[];
+
+  @Field(() => UserRelation, { nullable: true })
+  @Column()
+  public sponsoredBy: UserRelation;
+
+  @Field(() => String, { nullable: true })
+  @Column()
+  public country: string;
+
+  @Field(() => String, { nullable: true })
+  @Column()
+  public phone: string;
 }
