@@ -55,7 +55,7 @@ const esAr = {
       },
     },
     errors: {
-      user_not_found: "Userio no encontrado",
+      user_not_found: "Usuario no encontrado",
       not_authenticated: "Acceso sin autenticar",
       not_privileges: "Usuario con privilegios insuficientes",
       invalid_login: "Usuario inválido",
